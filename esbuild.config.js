@@ -1,7 +1,7 @@
 const { spawn } = require("child_process");
 const copyPlugin = require("esbuild-plugin-copy").default;
 const esbuild = require("esbuild");
-
+const argv = require("minimist")(process.argv.slice(2));
 let serverProcess;
 
 function startServer() {
@@ -41,17 +41,19 @@ esbuild
     platform: "node",
     inject: ["./esbuild/react-shim.js"],
     sourcemap: true,
-    watch: {
-      onRebuild(error) {
-        stopServer();
-        if (error) {
-          console.error("[server] watch build failed");
-        } else {
-          console.log("[server] watch build succeeded");
-          startServer();
+    watch: argv.watch
+      ? {
+          onRebuild(error) {
+            stopServer();
+            if (error) {
+              console.error("[server] watch build failed");
+            } else {
+              console.log("[server] watch build succeeded");
+              startServer();
+            }
+          },
         }
-      },
-    },
+      : null,
     plugins: [
       // @todo these are not watched
       copyPlugin({
@@ -63,23 +65,31 @@ esbuild
     ],
   })
   .then(() => {
-    console.log("[server] watching...");
-    startServer();
+    if(argv.watch){
+      console.log("[server] watching...");
+      startServer();
+    }
+    
   });
 
 // client
-esbuild
-  .serve(
-    {
-      servedir: "src/client",
-    },
-    {
-      entryPoints: ["src/client/index.jsx"],
-      bundle: true,
-      inject: ["./esbuild/react-shim.js"],
-      sourcemap: true,
-    }
-  )
-  .then(() => {
-    console.log("[client] serving...");
-  });
+const clientConfig = {
+  entryPoints: ["src/client/index.jsx"],
+  bundle: true,
+  inject: ["./esbuild/react-shim.js"],
+  sourcemap: true,
+};
+if (argv.watch) {
+  esbuild
+    .serve(
+      {
+        servedir: "src/client",
+      },
+      clientConfig
+    )
+    .then(() => {
+      console.log("[client] serving...");
+    });
+} else {
+  esbuild.build({ ...clientConfig, outfile: "dist/index.js" });
+}
