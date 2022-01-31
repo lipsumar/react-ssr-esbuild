@@ -5,8 +5,11 @@ import { matchRoutes } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
 import routes from "../routes";
 import dataLoaders from "./dataLoaders";
+import { HelmetProvider } from "react-helmet-async";
 
 export default async function ssr(url) {
+  const helmetContext = {};
+
   const routeMatches = matchRoutes(routes, url) || [];
   console.log(routeMatches);
   const datas = await Promise.all(
@@ -19,12 +22,17 @@ export default async function ssr(url) {
   );
 
   const html = Server.renderToString(
-    <StaticRouter location={url}>
-      <App data={datas} loading={false} />
-    </StaticRouter>
+    <HelmetProvider context={helmetContext}>
+      <StaticRouter location={url}>
+        <App data={datas} loading={false} />
+      </StaticRouter>
+    </HelmetProvider>
   );
+  const { helmet } = helmetContext;
+
   return {
     html,
     props: datas,
+    helmet,
   };
 }

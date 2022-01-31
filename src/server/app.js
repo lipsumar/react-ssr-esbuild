@@ -21,11 +21,12 @@ app.get("/ssr/data/:keys", async (req, res) => {
 });
 
 app.get("/*", async (req, res) => {
-  const { props, html } = await ssr(req.originalUrl);
+  const { props, html, helmet } = await ssr(req.originalUrl);
 
   res.render("index", {
     appHtml: html,
     appData: props,
+    helmet,
   });
 });
 
