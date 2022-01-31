@@ -41,6 +41,7 @@ esbuild
     platform: "node",
     inject: ["./esbuild/react-shim.js"],
     sourcemap: true,
+    jsxFactory: "jsx",
     watch: argv.watch
       ? {
           onRebuild(error) {
@@ -65,11 +66,10 @@ esbuild
     ],
   })
   .then(() => {
-    if(argv.watch){
+    if (argv.watch) {
       console.log("[server] watching...");
       startServer();
     }
-    
   });
 
 // client
@@ -78,6 +78,7 @@ const clientConfig = {
   bundle: true,
   inject: ["./esbuild/react-shim.js"],
   sourcemap: true,
+  jsxFactory: "jsx",
 };
 if (argv.watch) {
   esbuild

@@ -15,7 +15,7 @@ function WithServerData(props) {
 const AppLayout = () => {
   return (
     <WithServerData>
-      <div>
+      <div css={{ maxWidth: 600, margin: "0 auto" }}>
         <div>
           <Link to="/">The app</Link> - <Link to="/about">about</Link>
         </div>
